@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from heapfile import MaxHeap, MinHeap, Car
 
 URL = "https://www.ss.com/lv/transport/cars/"
 
@@ -101,7 +102,22 @@ def set_next_best_value(driver, box_name: str, value: str, error_message: str):
 def retrieve_data(driver) -> list:
     """Find table containing data about all cars and scrape them individually. Go to next page if one exists."""
     next_page = True
-    data = []
+    
+    # get a base value for creating the heap
+    excel_filter = input("Izvēlieties Excel filtrus: gads, tilpums, nobraukums, cena ->")
+    excel_filter = excel_filter.strip()
+
+    # heap creation
+    match excel_filter:
+        case "gads":
+            heap = MaxHeap(parameter=lambda car: car.year)
+        case "tilpums":
+            heap = MaxHeap(parameter=lambda car: car.engine_size)
+        case "nobraukums":
+            heap = MinHeap(parameter=lambda car: car.mileage)
+        case "cena":
+            heap = MinHeap(parameter= lambda car: car.price)    
+    
 
     while next_page:
         driver.execute_script("window.scrollTo(0, 0);")
@@ -119,7 +135,8 @@ def retrieve_data(driver) -> list:
 
             # retrieve all rows about cars
             cars = table.find_elements(By.TAG_NAME, "tr")
-            
+
+
             # iterate through each car
             for car in cars[1:-1]:
                 try:
@@ -134,16 +151,10 @@ def retrieve_data(driver) -> list:
                     mileage = all_data[5].text
                     price = all_data[6].text
 
-                    print(text)
-                    # add info to list
-                    data.append({
-                        'link': link,
-                        'text': text,
-                        'year': year,
-                        'engine_size': engine_size,
-                        'mileage': mileage,
-                        'price': price
-                    })
+                    # add to heap, in which comparison operations are made in regards to the user inputted attribute
+                    heap.insert(Car(link, text, year, engine_size, mileage, price))
+                    
+                    print("Added successfully)")
                 except:
                     print("error")
                     continue
@@ -168,12 +179,12 @@ def retrieve_data(driver) -> list:
         except Exception as e:
             print(f"Kļūda datu apstrādē: {e}")
 
-    if len(data) == 0:
+    if len(heap.heap) == 0:
         print("Netika atrasta neviena mašīna ar šiem filtriem!")
 
     print("Meklēšana pabeigta!")
 
-    return data
+    return heap
 
 
 if __name__ == "__main__":
@@ -184,7 +195,11 @@ if __name__ == "__main__":
         filters = set_filters(driver, data)
 
         if filters:
-            retrieve_data(driver)
+            result = retrieve_data(driver)
     finally:
         driver.quit()
+
+    test = result.remove()
+    print(test.price)
+    
 
