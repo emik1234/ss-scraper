@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from heapfile import MaxHeap, MinHeap, Car
+import re
 
 URL = "https://www.ss.com/lv/transport/cars/"
 
@@ -99,13 +100,11 @@ def set_next_best_value(driver, box_name: str, value: str, error_message: str):
         print(e)
 
 
-def retrieve_data(driver) -> list:
+def retrieve_data(driver, excel_filter) -> list:
     """Find table containing data about all cars and scrape them individually. Go to next page if one exists."""
     next_page = True
     
     # get a base value for creating the heap
-    excel_filter = input("Izvēlieties Excel filtrus: gads, tilpums, nobraukums, cena ->")
-    excel_filter = excel_filter.strip()
 
     # heap creation
     match excel_filter:
@@ -146,10 +145,14 @@ def retrieve_data(driver) -> list:
                     # extract specific data from all data
                     link = all_data[1].find_element(By.TAG_NAME, "a").get_attribute('href')
                     text = all_data[2].text
-                    year = all_data[3].text
-                    engine_size = all_data[4].text
+                    year = int(all_data[3].text)
+                    engine_size = float(all_data[4].text)
                     mileage = all_data[5].text
+                    mileage = int(re.search(r'\d+[\.,]?\d*', mileage).group().replace(',', ''))
                     price = all_data[6].text
+                    price = int(re.search(r'\d+[\.,]?\d*', price).group().replace(',', ''))
+
+                    print(link, text, year, engine_size, mileage, price)
 
                     # add to heap, in which comparison operations are made in regards to the user inputted attribute
                     heap.insert(Car(link, text, year, engine_size, mileage, price))
@@ -189,17 +192,27 @@ def retrieve_data(driver) -> list:
 
 if __name__ == "__main__":
     data = get_input()
+
+    # get a base value for creating the heap
+    excel_filter = input("Izvēlieties Excel filtrus: gads, tilpums, nobraukums, cena ->")
+    excel_filter = excel_filter.strip()
+
     driver = webdriver.Chrome()
 
     try:
         filters = set_filters(driver, data)
 
         if filters:
-            result = retrieve_data(driver)
+            result = retrieve_data(driver, excel_filter)
     finally:
         driver.quit()
 
+    print("test")
+    print(result)
     test = result.remove()
+    print("worked")
     print(test.price)
+    test = result.remove()
+    print(test.mileage)
     
 
