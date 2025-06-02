@@ -148,11 +148,9 @@ def retrieve_data(driver, excel_filter) -> list:
                     year = int(all_data[3].text)
                     engine_size = float(all_data[4].text)
                     mileage = all_data[5].text
-                    mileage = int(re.search(r'\d+[\.,]?\d*', mileage).group().replace(',', ''))
+                    mileage = int(re.search(r'\d+[\.,]?\d*', mileage).group().replace(',', '')) # extracts just the number
                     price = all_data[6].text
-                    price = int(re.search(r'\d+[\.,]?\d*', price).group().replace(',', ''))
-
-                    print(link, text, year, engine_size, mileage, price)
+                    price = int(re.search(r'\d+[\.,]?\d*', price).group().replace(',', '')) # extracts just the number
 
                     # add to heap, in which comparison operations are made in regards to the user inputted attribute
                     heap.insert(Car(link, text, year, engine_size, mileage, price))
@@ -207,12 +205,5 @@ if __name__ == "__main__":
     finally:
         driver.quit()
 
-    print("test")
-    print(result)
-    test = result.remove()
-    print("worked")
-    print(test.price)
-    test = result.remove()
-    print(test.mileage)
     
 
