@@ -1,14 +1,3 @@
-import os
-import sys
-from contextlib import redirect_stderr
-
-# Suppress TensorFlow warnings completely
-sys.stderr = open(os.devnull, 'w')  # Nuclear option - use cautiously!
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress ALL messages
-
-# Restore stderr later if needed (after your imports)
-# sys.stderr = sys.__stderr__
-
 from scraper import retrieve_data, set_filters
 from prompts import get_input
 from selenium import webdriver
