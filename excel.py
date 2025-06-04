@@ -1,8 +1,7 @@
-import pandas as pd
 from scraper import retrieve_data, set_filters
 from prompts import get_input
 from selenium import webdriver
-from openpyxl import load_workbook
+from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
@@ -12,38 +11,32 @@ def export_to_excel(car_heap, file_name="auto_dati.xlsx"):
         print("Nav datu, ko saglabāt.")
         return
 
-    # Pārveido datus no heap uz list of dicts
-    data = [{
-        "Saite": car.link,
-        "Īss apraksts": car.text,
-        "Gads": car.year,
-        "Tilpums (L)": car.engine_size,
-        "Nobraukums (tūkst. km)": car.mileage,
-        "Cena (€)": car.price
-    } for car in car_heap.heap]
-
-    df = pd.DataFrame(data)
-    df.to_excel(file_name, index=False)
-    print(f"Dati saglabāti failā: {file_name}")
-
-
-################## FORMATĒJUMS ######################
-
-    wb = load_workbook(file_name)
+    wb = Workbook()
     ws = wb.active
+    ws.title = "Auto dati"
 
-    # Iesaldē virsraksta rindu
-    ws.freeze_panes = "A2"
+    # Virsraksta rinda
+    headers = ["Saite", "Īss apraksts", "Gads", "Tilpums (L)", "Nobraukums (tūkst. km)", "Cena (€)"]
+    ws.append(headers)
 
-    # Formatēt virsrakstus
+
+    for car in car_heap.heap:
+        row = [
+            car.link,
+            car.text,
+            car.year,
+            car.engine_size,
+            car.mileage,
+            car.price
+        ]
+        ws.append(row)
+
+    # Formatē virsrakstus un kolonnas
     for col_num, column_cells in enumerate(ws.iter_cols(min_row=1, max_row=1), start=1):
         max_length = max(len(str(cell.value)) for cell in column_cells)
         col_letter = get_column_letter(col_num)
-
-        # Pielāgo kolonnas platumu
         ws.column_dimensions[col_letter].width = max(max_length + 2, 15)
 
-        # Stilē virsrakstu (treknraksts + centrēts)
         for cell in column_cells:
             cell.font = Font(bold=True)
             cell.alignment = Alignment(horizontal='center')
@@ -54,24 +47,35 @@ def export_to_excel(car_heap, file_name="auto_dati.xlsx"):
             cell.number_format = '#,## €'
 
     wb.save(file_name)
-
-############### ^^^^^^^^^^^^ FORMATĒJUMS ^^^^^^^^^^^^^^^ ################################
-
+    print(f"Dati saglabāti failā: {file_name}")
 
 if __name__ == "__main__":
-    # Lietotāja ievade
+    print("Sākam programmu...")
+
+
     data = get_input()
+    print("Lietotāja dati saņemti:", data)
 
-    # Kurš filtrs jāizmanto kā kārtošanas kritērijs
-    excel_filter = input("Izvēlieties Excel filtrus: gads, tilpums, nobraukums, cena ->").strip()
+    # Kārtošanas kritērijs
+    excel_filter = input("Izvēlieties Excel filtrus: gads, tilpums, nobraukums, cena -> ").strip()
+    print(f"Izvēlētais filtrs: {excel_filter}")
 
-    # Palaist pārlūku
+  
     driver = webdriver.Chrome()
+    print("Pārlūks palaists.")
 
     try:
         filters = set_filters(driver, data)
+        print("Filtri uzstādīti:", filters)
+
         if filters:
             car_heap = retrieve_data(driver, excel_filter)
+            print(f"Atrasti {len(car_heap.heap)} ieraksti.")
             export_to_excel(car_heap)
+        else:
+            print("Nav derīgu filtru. Dati netika iegūti.")
+    except Exception as e:
+        print("Kļūda izpildes laikā:", e)
     finally:
         driver.quit()
+        print("Pārlūks aizvērts.")
