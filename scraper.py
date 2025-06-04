@@ -146,7 +146,8 @@ def retrieve_data(driver, excel_filter) -> list:
                     link = all_data[1].find_element(By.TAG_NAME, "a").get_attribute('href')
                     text = all_data[2].text
                     year = int(all_data[3].text)
-                    engine_size = float(all_data[4].text)
+                    engine_size = float(all_data[4].text[0:2])
+                    print(engine_size)
                     mileage = all_data[5].text
                     mileage = int(re.search(r'\d+[\.,]?\d*', mileage).group().replace(',', '')) # extracts just the number
                     price = all_data[6].text
@@ -155,7 +156,7 @@ def retrieve_data(driver, excel_filter) -> list:
                     # add to heap, in which comparison operations are made in regards to the user inputted attribute
                     heap.insert(Car(link, text, year, engine_size, mileage, price))
                     
-                    print("Added successfully)")
+                    print("Added successfully")
                 except:
                     print("error")
                     continue

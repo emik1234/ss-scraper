@@ -1,6 +1,3 @@
-from scraper import retrieve_data, set_filters
-from prompts import get_input
-from selenium import webdriver
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
@@ -19,8 +16,9 @@ def export_to_excel(car_heap, file_name="auto_dati.xlsx"):
     headers = ["Saite", "Īss apraksts", "Gads", "Tilpums (L)", "Nobraukums (tūkst. km)", "Cena (€)"]
     ws.append(headers)
 
-
-    for car in car_heap.heap:
+    length = len(car_heap.heap)
+    for n in range(length):
+        car = car_heap.remove()
         row = [
             car.link,
             car.text,
