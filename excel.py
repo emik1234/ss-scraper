@@ -62,7 +62,6 @@ if __name__ == "__main__":
 
   
     driver = webdriver.Chrome()
-    print("Pārlūks palaists.")
 
     try:
         filters = set_filters(driver, data)
