@@ -1,6 +1,7 @@
 from scraper import retrieve_data, set_filters
 from prompts import get_input
 from selenium import webdriver
+from excel import export_to_excel
 
 if __name__ == "__main__":
     data = get_input()
@@ -16,5 +17,6 @@ if __name__ == "__main__":
 
         if filters:
             result = retrieve_data(driver, excel_filter)
+            export_to_excel(result)
     finally:
         driver.quit()

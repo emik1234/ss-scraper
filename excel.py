@@ -48,33 +48,3 @@ def export_to_excel(car_heap, file_name="auto_dati.xlsx"):
 
     wb.save(file_name)
     print(f"Dati saglabāti failā: {file_name}")
-
-if __name__ == "__main__":
-    print("Sākam programmu...")
-
-
-    data = get_input()
-    print("Lietotāja dati saņemti:", data)
-
-    # Kārtošanas kritērijs
-    excel_filter = input("Izvēlieties Excel filtrus: gads, tilpums, nobraukums, cena -> ").strip()
-    print(f"Izvēlētais filtrs: {excel_filter}")
-
-  
-    driver = webdriver.Chrome()
-
-    try:
-        filters = set_filters(driver, data)
-        print("Filtri uzstādīti:", filters)
-
-        if filters:
-            car_heap = retrieve_data(driver, excel_filter)
-            print(f"Atrasti {len(car_heap.heap)} ieraksti.")
-            export_to_excel(car_heap)
-        else:
-            print("Nav derīgu filtru. Dati netika iegūti.")
-    except Exception as e:
-        print("Kļūda izpildes laikā:", e)
-    finally:
-        driver.quit()
-        print("Pārlūks aizvērts.")
